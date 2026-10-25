@@ -1,0 +1,12 @@
+# 绝不要提交的东西
+*.key
+*.pem
+id_*
+*_key
+.env
+.env.*
+*token*
+*secret*
+config.yaml
+*.bak
+.DS_Store
