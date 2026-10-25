@@ -36,7 +36,8 @@
 │   ├── server-setup.md        服务器搭建：Hermes、phone-harness、adb、转发
 │   ├── phone-setup.md         手机搭建：无线调试、反向隧道、配对授权
 │   ├── safety.md              安全边界：哪些绝不做、审批怎么开
-│   └── stage-notifications.md 阶段通知：shell 通知怎么做、为什么不上药丸
+│   ├── stage-notifications.md 阶段通知：shell 通知怎么做、为什么不上药丸
+│   └── reliability.md         可靠性：通道会断、中断不等于失败、保活上限（草稿，未发布）
 ├── skills/
 │   └── phone-wechat-send/
 │       └── SKILL.md           微信发消息 skill：标题关卡、中文输入、只发一次
@@ -67,6 +68,8 @@
 - **Hermes 一趟要按 10 分钟量级留时间**：实测里一次完整流程接近 10 分钟，超时设 600 秒会被掐掉，设 1200 秒才稳；超时后先查输入框，再决定是补发还是重跑，盲目重跑会把“你好”打成“你好你好”。
 - **阶段通知用 shell 通知**：`cmd notification post` 发的通知只在通知栏，不上流体云药丸；Termux 常驻通知实测也没上药丸，药丸要走 Android 16 实时更新，得另外做应用，本项目不做药丸。
 - **不要开分类器自动运行**：`classifier_auto_run` 是启发式判断，可以被绕过，保持关闭，审批逐次确认。
+- **隧道回来了，不等于 adb 回来了**：转发是手动进程，隧道断了它就死，不会自己复活；恢复要按隧道探活、转发监听、设备状态、输入法的顺序查，见 `docs/reliability.md`。
+- **模型在列表里，不等于能用**：换模型前要逐个测短调用和完整手机任务，被打断的那一趟没有耗时结论，不能据此换默认模型，见 `docs/reliability.md`。
 
 ## 安全与隐私
 
