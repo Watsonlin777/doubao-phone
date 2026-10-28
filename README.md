@@ -37,7 +37,8 @@
 │   ├── phone-setup.md         手机搭建：无线调试、反向隧道、配对授权
 │   ├── safety.md              安全边界：哪些绝不做、审批怎么开
 │   ├── stage-notifications.md 阶段通知：shell 通知怎么做、为什么不上药丸
-│   └── reliability.md         可靠性：通道会断、中断不等于失败、保活上限（草稿，未发布）
+│   ├── reliability.md         可靠性：通道会断、中断不等于失败、保活上限（草稿，未发布）
+│   └── generic-agent-loop.md  通用 Agent 循环：参考肉包结构的观察-执行-反思循环（发送纪律除外，未实测）
 ├── skills/
 │   └── phone-wechat-send/
 │       └── SKILL.md           微信发消息 skill：标题关卡、中文输入、只发一次
@@ -81,6 +82,7 @@
 
 - [Hermes Agent](https://github.com/NousResearch/hermes-agent)（未在仓库里附带，只在文档里引用）
 - [phone-harness](https://github.com/ShawnPana/phone-harness)：本项目手机操控的核心件，Hermes 插件提供 `phone_exec`
+- [Roubao（肉包）](https://github.com/Turbo1123/roubao)（MIT）：`docs/generic-agent-loop.md` 的结构参考，只借规划、执行、反思、记录的分层与循环形状，未抄代码
 - Android adb、scrcpy、Termux 等工具，各归各自作者
 
 ## License
