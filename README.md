@@ -84,7 +84,17 @@
 - [phone-harness](https://github.com/ShawnPana/phone-harness)：本项目手机操控的核心件，Hermes 插件提供 `phone_exec`
 - [Roubao（肉包）](https://github.com/Turbo1123/roubao)（MIT）：`docs/generic-agent-loop.md` 的结构参考，只借规划、执行、反思、记录的分层与循环形状，未抄代码
 - Android adb、scrcpy、Termux 等工具，各归各自作者
+## 在 Agensi 上用这两 个skill
 
+本项目里的两个 skill 已经打包上架到 Agensi，你的 agent 接入 Agensi 就能直接调用：
+
+- **[phone-wechat-send](https://www.agensi.io/skills/phone-wechat-send)** — $4.50 一次性：给微信指定会话只发一条消息，标题关卡、中文输入、只发一次、发完核对并恢复。这是本项目里唯一实测走通的场景。
+- **[android-phone-agent](https://www.agensi.io/skills/android-phone-agent)** — $6.50 一次性：通用的 Android 真机操作规范（定位、标题关卡、只提交一次、底部窗口核对、恢复）；除微信场景外，其他场景是待验证的参考模式。
+
+  现在两个 skill 都在免费试用，2026 年 11 月 15 日恢复原价。
+
+  推广链接：https://www.agensi.io/r/WATSONLIN777
+  
 ## License
 
 MIT，见 `LICENSE`。
