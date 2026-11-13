@@ -91,7 +91,7 @@
 - **[phone-wechat-send](https://www.agensi.io/skills/phone-wechat-send)** — $4.50 一次性：给微信指定会话只发一条消息，标题关卡、中文输入、只发一次、发完核对并恢复。这是本项目里唯一实测走通的场景。
 - **[android-phone-agent](https://www.agensi.io/skills/android-phone-agent)** — $6.50 一次性：通用的 Android 真机操作规范（定位、标题关卡、只提交一次、底部窗口核对、恢复）；除微信场景外，其他场景是待验证的参考模式。
 
-  现在两个 skill 都在免费试用，2026 年 11 月 15 日恢复原价。
+  现在两个 skill 都免费。
 
   推广链接：https://www.agensi.io/r/WATSONLIN777
   
