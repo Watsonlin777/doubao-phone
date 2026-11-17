@@ -1,7 +1,7 @@
 ---
 name: android-tv-debloat
-description: "Turn your Android phone into an ADB debug server for your Android TV, then debloat the TV (disable ad, telemetry and bloatware apps, reversible) and install a clean launcher, so the TV stops showing ads. The phone relays the TV's ADB port to your server; the agent probes the TV, lists packages, asks you before disabling anything, and can restore it all with one command."
-version: 1.0.0
+description: "Turn your Android phone into an ADB debug server for your Android TV, then debloat the TV (disable its ad, telemetry and bloatware apps, reversible) and install a clean launcher, removing the TV's own home-screen ads. The phone relays the TV's ADB port to your server; the agent probes the TV, lists packages, asks you before disabling anything, and can restore it all with one command."
+version: 1.0.1
 author: Watsonlin777
 license: MIT
 platforms: [linux]
@@ -98,10 +98,14 @@ the server, where Python and Docker live.
    Keep the TV on.
 3. Note the TV's IP address (Settings -> Network, or the Wireless-debugging
    screen). The agent needs it as `TV_HOST`.
-4. The first time the relay connects, the TV shows **"Allow USB debugging?"**
-   with the relay's key fingerprint. Accept it on the TV with the remote
-   (tick "Always allow from this computer" only for your own phone/relay).
-   This is a one-time manual step; the agent cannot click it for you.
+4. The first time the agent connects, the TV shows **"Allow USB debugging?"**
+   with the ADB client's key fingerprint. The key belongs to the ADB client
+   on the server (CleanYourTV `tools/tv.py`); the phone relay only forwards
+   the connection and has no key of its own. Accept it on the TV with the
+   remote (tick "Always allow from this computer" only for your own
+   server's key). This is a one-time manual step; the agent cannot click it
+   for you. If you later run the tools from a different machine, its key is
+   different and the TV will ask again.
 5. If the TV only offers Wireless debugging with a pairing code (some
    Chromecast / Google TV Streamer sets do), pair it once with the stock
    `adb` from the phone or server, then either run `adb tcpip 5555` (lasts
@@ -118,7 +122,11 @@ Template: `scripts/phone/tv-relay.sh` (placeholders only).
    (`git clone https://github.com/Gathin23/cleanyourtv`) or copy its
    `tools/` folder to the phone.
 2. Fill in the template's placeholders: the TV's IP (`TV_HOST`) and ADB
-   port (usually `5555`, or the Wireless-debugging port from Part 1).
+   port. Usually this is `5555`, but many Google TV sets keep 5555 closed
+   and only offer Wireless debugging with a pairing code (see Part 1
+   step 5) — then the port is the one the Wireless-debugging screen shows,
+   and the relay forwards to that port instead. The relay forwards to
+   whatever port you put here, so get this right before starting it.
 3. Run the template. It starts the relay (CleanYourTV `tools/relay.py`)
    listening on the phone's localhost (e.g. `127.0.0.1:5556`) and forwarding
    to the TV's ADB port. It prints the relay port; the server needs it.
@@ -142,8 +150,15 @@ Template: `scripts/server/tv-forward.sh` (placeholders only).
 3. Probe the TV through the forward. With CleanYourTV's tools on the
    server (Python 3 + `tools/requirements.txt` installed in a venv):
    `TV_HOST=127.0.0.1 tools/tv.py --probe` (model, Android version,
-   firmware). If the probe fails, stop: check the TV is on, the relay is
-   running, and the TV's IP has not changed. Do not proceed to disabling
+   firmware). If the probe fails, stop and find out why before doing
+   anything else. Check in this order: the TV is on; the relay is running
+   on the phone; the TV's IP has not changed. If those are all fine and
+   the probe still fails with "cannot reach", the TV's port 5555 is
+   probably closed — many Google TV sets keep it closed. Fall back to the
+   Wireless-debugging pairing flow in Part 1 step 5: pair once with the
+   stock `adb`, then either run `adb tcpip 5555` (lasts until the TV
+   reboots) or point the relay at the Wireless-debugging port the TV
+   screen shows and re-run the probe. Do not proceed to disabling
    anything on a failed probe.
 4. List the TV's packages: `tools/tv.py 'pm list packages'`. Save the
    output as the backup (see "Safety rules"). This list is also what the
@@ -219,6 +234,16 @@ Do these in order, and do not skip the confirmation step.
 - **Fail closed.** A failed probe, a failed install, or a Home check that
   does not land on the new launcher stops the run. Do not retry a disable
   or an install blindly; report the failure and the last verified state.
+- **If the connection drops mid-run, reconcile before continuing.** The
+  chain has two hops (server -> phone tunnel -> relay -> TV), and the
+  phone tunnel can drop. If the relay, tunnel, or forward drops while a
+  disable is in progress, do not re-run the disable blindly. First
+  re-establish the connection, re-probe the TV, and run
+  `pm list packages -d` to see which packages are actually disabled.
+  Compare that against the backup record and the confirmed list. Only then
+  decide: resume disabling the remaining items, or run
+  `tools/restore.sh` first and start over. A half-applied list must be
+  reconciled, not re-applied on top of an unknown state.
 
 ## Verification checklist
 
