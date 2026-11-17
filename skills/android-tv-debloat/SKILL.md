@@ -1,7 +1,7 @@
 ---
 name: android-tv-debloat
 description: "Turn your Android phone into an ADB debug server for your Android TV, then debloat the TV (disable its ad, telemetry and bloatware apps, reversible) and install a clean launcher, removing the TV's own home-screen ads. The phone relays the TV's ADB port to your server; the agent probes the TV, lists packages, asks you before disabling anything, and can restore it all with one command."
-version: 1.0.1
+version: 1.0.2
 author: Watsonlin777
 license: MIT
 platforms: [linux]
@@ -41,9 +41,13 @@ This skill has two parts from two sources. Do not confuse them.
   debloat lists (`examples/`), and the launcher source come from
   CleanYourTV (Gathin23/cleanyourtv, https://github.com/Gathin23/cleanyourtv).
   Clone that repo separately and read its LICENSE; this skill does not bundle
-  its code. This skill is the agent-operated workflow around it: it tells the
-  agent how to drive those tools through the phone relay, what to ask you,
-  and what never to touch.
+  its code. Pin the version this skill was written against — commit
+  `c2d6e79381add9daa83e116882f6d6b130dc4a73` (`git clone` then
+  `git checkout c2d6e79381add9daa83e116882f6d6b130dc4a73`) — so an upstream
+  change to a tool's command line does not break this skill. This skill is
+  the agent-operated workflow around it: it tells the agent how to drive
+  those tools through the phone relay, what to ask you, and what never to
+  touch.
 
 ## When to use this
 
@@ -131,7 +135,10 @@ Template: `scripts/phone/tv-relay.sh` (placeholders only).
    listening on the phone's localhost (e.g. `127.0.0.1:5556`) and forwarding
    to the TV's ADB port. It prints the relay port; the server needs it.
 4. The relay is a lightweight TCP forward. Keep it running in Termux (with a
-   wake lock, the same way you keep a reverse tunnel alive). If the phone
+   wake lock, the same way you keep a reverse tunnel alive). Also exempt
+   Termux from battery optimization (Settings -> Apps -> Termux -> Battery
+   -> Unrestricted, or allow background activity), otherwise Android may
+   kill the relay while it sits in the background. If the phone
    reboots or changes network, restart the relay and re-check the TV's IP.
 5. The phone also needs its reverse SSH tunnel to the server running (the
    same tunnel you use for remote adb to the phone). The server reaches the
@@ -189,12 +196,17 @@ Do these in order, and do not skip the confirmation step.
    uninstall a system package, never `pm uninstall` a preloaded app.
    The disable script refuses to leave the TV without a Home app (see
    "Safety rules").
-5. **Install the launcher.** Build the clean launcher on the server
+5. **Install the launcher.** First check CleanYourTV's Releases page for a
+   prebuilt launcher APK — if one is attached, use it and skip the build.
+   Otherwise build the clean launcher on the server
    (`tools/docker-build.sh` builds it in Docker, so the server needs only
    Docker; or build with a local JDK 17-22 + Android SDK platform 34).
-   Install it through the forward (`launcher/build-and-install.sh`) and
-   make it the default Home. The script rolls back if Home does not land
-   on the new launcher.
+   The Docker build downloads the Android SDK (several GB) and runs a
+   Gradle build, so the server needs enough free disk and memory for it —
+   a small 2 vCPU / 2 GiB server is tight; if the build fails for lack of
+   memory or disk, use the prebuilt APK instead. Install it through the
+   forward (`launcher/build-and-install.sh`) and make it the default Home.
+   The script rolls back if Home does not land on the new launcher.
 6. **Verify.** After the install, confirm: the new launcher answers HOME
    (press Home and check the screen), the disabled packages stay disabled
    (`pm list packages -d`), and a screenshot of the home screen shows the
@@ -221,6 +233,11 @@ Do these in order, and do not skip the confirmation step.
 - **`pm disable-user` only.** Never uninstall a system or preloaded package.
   Disabling is reversible; uninstalling a system package is not reliably
   reversible without a factory reset.
+- **Never disable a package `match.py` marks as `never`.** Android core
+  packages show as `never` in `tools/match.py` — they are not bloat and
+  must never be disabled. The same goes for the TV's Settings app, its
+  input method, and its system UI components. If a package looks like
+  bloat but you cannot tell what it does, ask the user; do not guess.
 - **One run, one list.** Do not re-run the disable step on a TV that was
   already debloated without re-probing and re-confirming first. After a
   firmware update, re-probe and use `tools/check.py --fix` to re-apply only
