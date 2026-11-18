@@ -12,6 +12,11 @@ TV_PORT="YOUR_TV_ADB_PORT"      # 电视的 ADB 端口，一般 5555；无线调
 RELAY_PORT="15555"              # 手机本机中继端口（relay.py 默认 15555）
 CLEANYOURTV_DIR="$HOME/cleanyourtv"   # CleanYourTV 仓库在手机上的位置
 
+# 占位符校验：没填真实值就退出
+case "$TV_HOST/$TV_PORT" in
+  *YOUR_*) echo "先把 TV_HOST / TV_PORT 的 YOUR_… 换成真实值再跑"; exit 1 ;;
+esac
+
 # 检查 Python 与工具
 command -v python3 >/dev/null || { echo "缺 python3：先 pkg install python"; exit 1; }
 [ -f "$CLEANYOURTV_DIR/tools/relay.py" ] || { echo "找不到 $CLEANYOURTV_DIR/tools/relay.py：先 git clone https://github.com/Gathin23/cleanyourtv"; exit 1; }
